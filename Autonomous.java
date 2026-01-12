@@ -39,10 +39,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Driver Station OpMode list, or add a @Disabled annotation to prevent this OpMode from being
  * added to the Driver Station.
  */
-@TeleOp // Driver controlled
+@Autonomous // Driver controlled
 // If you wanted to change this to an autonomous op mode replace it with @Autonomous
 
-public class driver extends LinearOpMode {
+public class Autonomous extends LinearOpMode {
     private Blinker control_Hub;
     private DcMotor intake;
     private DcMotor index;
@@ -67,10 +67,19 @@ public class driver extends LinearOpMode {
         front_right = hardwareMap.get(DcMotor.class, "front_right");
         // imu = hardwareMap.get(IMU.class, "imu");
 
-        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //encoder tells you how far the robot traveled (convert to inches)
+        front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //setting encoder to zero, also stops the robot
+        front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        front_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        front_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         telemetry.addData("Status", "Initialized"); 
         telemetry.update();
@@ -79,6 +88,39 @@ public class driver extends LinearOpMode {
         //runs until the end of the match (driver presses STOP)
         double tgtPower = 0;
         while (opModeIsActive()) {
+            driveMotorsForward(1);
+            sleep(5000);
+            stopMotors();
+            break;
         }
+    }
+
+    public void driveMotorsForward(float speed) {
+        double frontLeftPower = speed * -1;
+        double backLeftPower = speed * -1;
+        double frontRightPower = speed;
+        double backRightPower = speed;
+        
+        front_left.setPower(frontLeftPower);
+        back_left.setPower(backLeftPower);
+        front_right.setPower(frontRightPower);
+        back_right.setPower(backRightPower);
+        
+        // front_left = "move clockwise by speed";
+        // back_left = "move clockwise by speed";
+        // front_right = "move counterclockwise by speed";
+        // back_right = "move counterclockwise by speed";
+    }
+
+    public void stopMotors() {
+        double frontLeftPower = 0;
+        double backLeftPower = 0;
+        double frontRightPower = 0;
+        double backRightPower = 0;
+        
+        front_left.setPower(frontLeftPower);
+        back_left.setPower(backLeftPower);
+        front_right.setPower(frontRightPower);
+        back_right.setPower(backRightPower);
     }
 }
