@@ -167,6 +167,11 @@ public class driver extends LinearOpMode {
                 turnLeft(speed);
             }
             
+            telemetry.addData("Front left motor power:", front_left.getPower()); 
+            telemetry.addData("Back left motor power:", back_left.getPower()); 
+            telemetry.addData("Front right motor power:", front_right.getPower()); 
+            telemetry.addData("Back right motor power:", back_right.getPower()); 
+
             telemetry.update();
         }
     }
