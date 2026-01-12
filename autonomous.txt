@@ -1,0 +1,7 @@
+How does autonomous mode work?
+
+
+
+
+
+what to do when the control hub is off during the competition and I can't edit the code
