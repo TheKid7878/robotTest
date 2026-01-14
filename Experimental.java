@@ -104,36 +104,36 @@ public class driver extends LinearOpMode {
             float gamepadY = -gamepad1.left_stick_y;
             // isJoystickForward(gamepadX, gamepadY){return boolepressio)
             if (gamepadX == 0 && gamepadY > 0) { //0.1 & -0.1 instead of 0
-                telemetry.addData("Robot: ", "forward");
+                telemetry.addData("Robot", "forward");
                 float speed = Math.abs(gamepadY);
                 driveMotorsForward(speed);
             } else if (gamepadX == 0 && gamepadY < 0) {
-                telemetry.addData("Robot: ", "backward");
+                telemetry.addData("Robot", "backward");
                 float speed = Math.abs(gamepadY);
                 driveMotorsBackward(speed);
             } else if (gamepadX < 0 && gamepadY == 0) {
-                telemetry.addData("Robot: ", "left");
+                telemetry.addData("Robot", "left");
                 float speed = Math.abs(gamepadX);
                 driveMotorsLeft(speed);
             } else if (gamepadX > 0 && gamepadY == 0) {
-                telemetry.addData("Robot: ", "right");
+                telemetry.addData("Robot", "right");
                 float speed = Math.abs(gamepadX);
                 driveMotorsRight(speed);
             }else if (gamepadX > 0 && gamepadY > 0) {
-                telemetry.addData("Robot: ", "right diagonal forward");
+                telemetry.addData("Robot", "right diagonal forward");
                 float speed = (float)Math.sqrt(gamepadX * gamepadX + gamepadY * gamepadY);
                 driveMotorsRightDiagonalF(speed);
             } else if (gamepadX < 0 && gamepadY > 0) {
-                telemetry.addData("Robot: ", "left diagonal forward");
+                telemetry.addData("Robot", "left diagonal forward");
                 float speed = (float)Math.sqrt(gamepadX * gamepadX + gamepadY * gamepadY);
                 //↑ the square root of x squared plus y squared = magnitude, how much the stick is pushed overall
                 driveMotorsLeftDiagonalF(speed);
             } else if (gamepadX > 0 && gamepadY < 0) {
-                telemetry.addData("Robot: ", "right diagonal backward");
+                telemetry.addData("Robot", "right diagonal backward");
                 float speed = (float)Math.sqrt(gamepadX * gamepadX + gamepadY * gamepadY);
                 driveMotorsRightDiagonalB(speed);
             } else if (gamepadX < 0 && gamepadY < 0) {
-                telemetry.addData("Robot: ", "left diagonal backward");
+                telemetry.addData("Robot", "left diagonal backward");
                 float speed = (float)Math.sqrt(gamepadX * gamepadX + gamepadY * gamepadY);
                 driveMotorsLeftDiagonalF(speed);
             } else {

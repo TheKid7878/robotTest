@@ -54,6 +54,9 @@ public class Autonomous extends LinearOpMode {
     private IMU imu;
     private Servo servoTest;
 
+    //RUN_WITHOUT_ENCODER - motor runs purely with the power you give it, no feedback
+    //RUN_USING_ENCODER - motor uses its encoder to maintain a consistent velocity
+    //RUN_TO_POSITION - motor goes to a target encoder position and stops
 
     @Override
     public void runOpMode() {
@@ -71,7 +74,7 @@ public class Autonomous extends LinearOpMode {
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //encoder tells you how far the robot traveled (convert to inches)
+        //encoder tells you how far the robot has traveled in "ticks"
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //setting encoder to zero, also stops the robot
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -86,41 +89,35 @@ public class Autonomous extends LinearOpMode {
         waitForStart();
 
         //runs until the end of the match (driver presses STOP)
-        double tgtPower = 0;
         while (opModeIsActive()) {
-            driveMotorsForward(1);
+            driveMotorsForward(200); //will turn the motors at 200 ticks per second
             sleep(5000);
             stopMotors();
             break;
         }
     }
 
-    public void driveMotorsForward(float speed) {
-        double frontLeftPower = speed * -1;
-        double backLeftPower = speed * -1;
-        double frontRightPower = speed;
-        double backRightPower = speed;
+    public void driveMotorsForward(float velocity) {
+        double frontLeftVelocity = velocity * -1;
+        double backLeftVelocity = velocity * -1;
+        double frontRightVelocity = velocity;
+        double backRightVelocity = velocity;
         
-        front_left.setPower(frontLeftPower);
-        back_left.setPower(backLeftPower);
-        front_right.setPower(frontRightPower);
-        back_right.setPower(backRightPower);
-        
-        // front_left = "move clockwise by speed";
-        // back_left = "move clockwise by speed";
-        // front_right = "move counterclockwise by speed";
-        // back_right = "move counterclockwise by speed";
+        front_left.setVelocity(frontLeftVelocity); //using setVelocity() to take full advantage of RUN_USING_ENCODER
+        back_left.setVelocity(backLeftVelocity);
+        front_right.setVelocity(frontRightVelocity);
+        back_right.setVelocity(backRightVelocity);
     }
 
     public void stopMotors() {
-        double frontLeftPower = 0;
-        double backLeftPower = 0;
-        double frontRightPower = 0;
-        double backRightPower = 0;
+        double frontLeftVelocity = 0;
+        double backLeftVelocity = 0;
+        double frontRightVelocity = 0;
+        double backRightVelocity = 0;
         
-        front_left.setPower(frontLeftPower);
-        back_left.setPower(backLeftPower);
-        front_right.setPower(frontRightPower);
-        back_right.setPower(backRightPower);
+        front_left.setVelocity(frontLeftVelocity);
+        back_left.setVelocity(backLeftVelocity);
+        front_right.setVelocity(frontRightVelocity);
+        back_right.setVelocity(backRightVelocity);
     }
 }
