@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous // Driver controlled
 // If you wanted to change this to an autonomous op mode replace it with @Autonomous
 
-public class Autonomous extends LinearOpMode {
+public class Auto extends LinearOpMode {
     private Blinker control_Hub;
     private DcMotor intake;
     private DcMotor index;

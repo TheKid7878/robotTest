@@ -5,3 +5,9 @@ How does autonomous mode work?
 
 
 what to do when the control hub is off during the competition and I can't edit the code
+
+
+To-do list for today:
+- Get the motor directions right
+- Test autonomous
+- If it works, switch to RUN_TO_POSITION
