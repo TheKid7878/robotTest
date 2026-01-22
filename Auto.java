@@ -115,17 +115,22 @@ public class Auto extends LinearOpMode {
         //170 is a motor speed in RPM (rotations per minute), so we're dividing it by 60 to convert it to RPS (rotations per second)
         //then multiplying by counts per revolution to turn rotations into ticks
         
-        telemetry.addData("Position", "Initialized");
-        telemetry.update();
-        
         front_left.setVelocity(TPS);
         front_right.setVelocity(TPS);
         back_left.setVelocity(TPS);
         back_right.setVelocity(TPS);
 
         //runs until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        //isBusy() checks if the motor has reached its target encoder position, or if the error is greater than 0
+        while (opModeIsActive() && (front_left.isBusy() || back_left.isBusy() || front_right.isBusy() || back_right.isBusy())) {
             intake.setPower(1); //intake on constantly
+
+            telemetry.addData("Front left motor position", front_left.getCurrentPosition()); 
+            telemetry.addData("Back left motor position", back_left.getCurrentPosition()); 
+            telemetry.addData("Front right motor position", front_right.getCurrentPosition()); 
+            telemetry.addData("Back right motor position", back_right.getCurrentPosition()); 
+        
+            telemetry.update();
         }
     }
 
@@ -157,15 +162,5 @@ public class Auto extends LinearOpMode {
         back_right.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
     }
 
-    // public void stopMotors() {
-    //     double frontLeftVelocity = 0;
-    //     double backLeftVelocity = 0;
-    //     double frontRightVelocity = 0;
-    //     double backRightVelocity = 0;
-        
-    //     front_left.setVelocity(frontLeftVelocity);
-    //     back_left.setVelocity(backLeftVelocity);
-    //     front_right.setVelocity(frontRightVelocity);
-    //     back_right.setVelocity(backRightVelocity);
-    // }
+    //we don't need stopMotors() because we're using RUN_TO_POSITION which automatically stops the motors once the robot reaches its destination
 }
