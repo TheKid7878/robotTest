@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Blinker;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -39,24 +41,31 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Driver Station OpMode list, or add a @Disabled annotation to prevent this OpMode from being
  * added to the Driver Station.
  */
-@Autonomous // Driver controlled
-// If you wanted to change this to an autonomous op mode replace it with @Autonomous
+@Autonomous
 
 public class Auto extends LinearOpMode {
     private Blinker control_Hub;
     private DcMotor intake;
     private DcMotor index;
     private DcMotor shooter;
-    private DcMotor back_left;
-    private DcMotor back_right;
-    private DcMotor front_left;
-    private DcMotor front_right;
+    private DcMotorEx back_left; //Ex gives extra features like velocity control
+    private DcMotorEx back_right;
+    private DcMotorEx front_left;
+    private DcMotorEx front_right;
     private IMU imu;
     private Servo servoTest;
 
+    static final double COUNTS_PER_REV = 384.5; //how many ticks the encoder produces for one full rotation of the motor shaft
+    static final double WHEEL_DIAMETER_IN = 4.094;
+    static final double WHEEL_CIRCUMFERENCE_IN = WHEEL_DIAMETER_IN * Math.PI;
+    static final double COUNTS_PER_INCH = COUNTS_PER_REV / WHEEL_CIRCUMFERENCE_IN;
+    // double distanceInches = 24; //2 feet
+    //counts = ticks
+    //To go from inches to ticks: Multiply by the counts per revolution then divide by wheel circumference
+
     //RUN_WITHOUT_ENCODER - motor runs purely with the power you give it, no feedback
     //RUN_USING_ENCODER - motor uses its encoder to maintain a consistent velocity
-    //RUN_TO_POSITION - motor goes to a target encoder position and stops
+    //RUN_TO_POSITION - motor goes to a target encoder position and stops, target a specific position rather than a specific velocity
 
     @Override
     public void runOpMode() {
@@ -64,60 +73,99 @@ public class Auto extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         index = hardwareMap.get(DcMotor.class, "index");
         shooter = hardwareMap.get(DcMotor.class, "shooter");
-        back_left = hardwareMap.get(DcMotor.class, "back_left");
-        back_right = hardwareMap.get(DcMotor.class, "back_right");
-        front_left = hardwareMap.get(DcMotor.class, "front_left");
-        front_right = hardwareMap.get(DcMotor.class, "front_right");
+        back_left = hardwareMap.get(DcMotorEx.class, "back_left");
+        back_right = hardwareMap.get(DcMotorEx.class, "back_right");
+        front_left = hardwareMap.get(DcMotorEx.class, "front_left");
+        front_right = hardwareMap.get(DcMotorEx.class, "front_right");
         // imu = hardwareMap.get(IMU.class, "imu");
 
         front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //encoder tells you how far the robot has traveled in "ticks"
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //setting encoder to zero, also stops the robot
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        front_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        front_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        telemetry.addData("Status", "Initialized"); 
+        telemetry.addData("Status", "Initialized");
         telemetry.update();
         waitForStart();
 
+        setTargetPositionForward(24);
+
+        //distanceInches is the physical distance we want the robot to travel
+        //COUNTS_PER_INCH is the conversion factor; tells us how many encoder ticks are needed to travel that many inches
+        //distanceInches * COUNTS_PER_INCH produces a decimal # (floating-point),
+        //so int turns it into a whole # (integer) to make it compatible with the motor API
+        // front_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        // front_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        // back_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        // back_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+
+        front_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        front_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        back_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        back_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // double TPS = (175/60) * COUNTS_PER_REV;
+        double TPS = (175.0 / 60.0) * COUNTS_PER_REV; //ticks per second
+        //170 RPM is an estimate of how fast the wheel turns; you can make this smaller but then the robot will move slower
+        //170 is a motor speed in RPM (rotations per minute), so we're dividing it by 60 to convert it to RPS (rotations per second)
+        //then multiplying by counts per revolution to turn rotations into ticks
+        
+        telemetry.addData("Position", "Initialized");
+        telemetry.update();
+        
+        front_left.setVelocity(TPS);
+        front_right.setVelocity(TPS);
+        back_left.setVelocity(TPS);
+        back_right.setVelocity(TPS);
+
         //runs until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            driveMotorsForward(200); //will turn the motors at 200 ticks per second
-            sleep(5000);
-            stopMotors();
-            break;
+            intake.setPower(1); //intake on constantly
         }
     }
 
-    public void driveMotorsForward(float velocity) {
-        double frontLeftVelocity = velocity * -1;
-        double backLeftVelocity = velocity * -1;
-        double frontRightVelocity = velocity;
-        double backRightVelocity = velocity;
-        
-        front_left.setVelocity(frontLeftVelocity); //using setVelocity() to take full advantage of RUN_USING_ENCODER
-        back_left.setVelocity(backLeftVelocity);
-        front_right.setVelocity(frontRightVelocity);
-        back_right.setVelocity(backRightVelocity);
+    public void setTargetPositionForward(int distanceInches) {
+        front_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        front_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        back_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        back_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
     }
 
-    public void stopMotors() {
-        double frontLeftVelocity = 0;
-        double backLeftVelocity = 0;
-        double frontRightVelocity = 0;
-        double backRightVelocity = 0;
-        
-        front_left.setVelocity(frontLeftVelocity);
-        back_left.setVelocity(backLeftVelocity);
-        front_right.setVelocity(frontRightVelocity);
-        back_right.setVelocity(backRightVelocity);
+    public void setTargetPositionBackward(int distanceInches) {
+        front_left.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        front_right.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        back_left.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        back_right.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
     }
+
+    public void setTargetPositionRight(int distanceInches) {
+        front_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        front_right.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        back_left.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        back_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+    }
+
+    public void setTargetPositionLeft(int distanceInches) {
+        front_left.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        front_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        back_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+        back_right.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
+    }
+
+    // public void stopMotors() {
+    //     double frontLeftVelocity = 0;
+    //     double backLeftVelocity = 0;
+    //     double frontRightVelocity = 0;
+    //     double backRightVelocity = 0;
+        
+    //     front_left.setVelocity(frontLeftVelocity);
+    //     back_left.setVelocity(backLeftVelocity);
+    //     front_right.setVelocity(frontRightVelocity);
+    //     back_right.setVelocity(backRightVelocity);
+    // }
 }

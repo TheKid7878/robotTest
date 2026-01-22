@@ -11,3 +11,9 @@ To-do list for today:
 - Get the motor directions right
 - Test autonomous
 - If it works, switch to RUN_TO_POSITION
+
+Now what:
+- Turn the moving code into a function, and also write code to move the robot to left, right, back
+- Is busy??
+- Write code to turn the robot by a given number of degrees
+- Turn it into a sequence (move left, forward, turn...) then shoot balls at the end?
