@@ -46,15 +46,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Auto extends LinearOpMode {
     private Blinker control_Hub;
-    // private DcMotor intake;
-    // private DcMotor index;
-    // private DcMotor shooter;
+    private DcMotor intake;
+    private DcMotor index;
+    private DcMotor shooter;
     private DcMotorEx back_left;
     private DcMotorEx back_right;
     private DcMotorEx front_left;
     private DcMotorEx front_right;
     private IMU imu;
     private Servo servoTest;
+    private boolean isShooting = false;
 
     static final double COUNTS_PER_REV = 537.7;
     static final double WHEEL_DIAMETER_IN = 4.094;
@@ -72,9 +73,9 @@ public class Auto extends LinearOpMode {
     @Override
     public void runOpMode() {
         control_Hub = hardwareMap.get(Blinker.class, "Control Hub");
-        // intake = hardwareMap.get(DcMotor.class, "intake");
-        // index = hardwareMap.get(DcMotor.class, "index");
-        // shooter = hardwareMap.get(DcMotor.class, "shooter");
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        index = hardwareMap.get(DcMotor.class, "index");
+        shooter = hardwareMap.get(DcMotor.class, "shooter");
         back_left = hardwareMap.get(DcMotorEx.class, "back_left");
         back_right = hardwareMap.get(DcMotorEx.class, "back_right");
         front_left = hardwareMap.get(DcMotorEx.class, "front_left");
@@ -105,14 +106,19 @@ public class Auto extends LinearOpMode {
         // back_left.setTargetPosition((int)(-distanceInches * COUNTS_PER_INCH));
         // back_right.setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
 
-        setTargetPositionForward(24);
-        sleep(2000);
-        setTargetPositionRight(24);
+        //the sequence (for now):
+        //move forward → turn left or right → move forward toward the goal if necessary → shoot three balls
+        setTargetPositionForward(54);
+        sleep(1000);
+        turnLeftForTime(100);
+        shoot();
+        // sleep(1000);
+        // setTargetPositionRight(24);
 
         //runs until the end of the match (driver presses STOP)
         //isBusy() checks if the motor has reached its target encoder position, or if the error is greater than 0
         while (opModeIsActive() && (front_left.isBusy() || back_left.isBusy() || front_right.isBusy() || back_right.isBusy())) {
-            // intake.setPower(1); //intake on constantly
+            intake.setPower(1); //intake on constantly
 
             telemetry.addData("Front left motor position", front_left.getCurrentPosition()); 
             telemetry.addData("Back left motor position", back_left.getCurrentPosition()); 
@@ -124,6 +130,8 @@ public class Auto extends LinearOpMode {
     }
 
     public void setTargetPositionForward(int distanceInches) {
+        if (isShooting) return;
+
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //setting encoder to zero, also stops the robot
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -151,6 +159,8 @@ public class Auto extends LinearOpMode {
     }
 
     public void setTargetPositionBackward(int distanceInches) {
+        if (isShooting) return;
+
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -178,6 +188,8 @@ public class Auto extends LinearOpMode {
     }
 
     public void setTargetPositionRight(int distanceInches) {
+        if (isShooting) return;
+
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -205,6 +217,8 @@ public class Auto extends LinearOpMode {
     }
 
     public void setTargetPositionLeft(int distanceInches) {
+        if (isShooting) return;
+
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -229,6 +243,54 @@ public class Auto extends LinearOpMode {
         front_right.setVelocity(TPS);
         back_left.setVelocity(TPS);
         back_right.setVelocity(TPS);
+    }
+
+    public void turnRightForTime(double time) {
+        if (isShooting) return;
+
+        front_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        front_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        front_left.setPower(-1); //using setPower because setVelocity uses encoders
+        back_left.setPower(-1);
+        front_right.setPower(-1);
+        back_right.setPower(-1);
+
+        sleep(time);
+
+        front_left.setPower(0);
+        front_right.setPower(0);
+        back_left.setPower(0);
+        back_right.setPower(0);
+    }
+
+    public void turnLeftForTime(double time) {
+        if (isShooting) return;
+
+        front_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        front_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        front_left.setPower(1);
+        back_left.setPower(1);
+        front_right.setPower(1);
+        back_right.setPower(1);
+
+        sleep(time);
+
+        front_left.setPower(0);
+        front_right.setPower(0);
+        back_left.setPower(0);
+        back_right.setPower(0);
+    }
+
+    function shoot() {
+        isShooting = true; //don't move while shooting
+        index.setPower(-1);
+        shooter.setPower(1);
     }
 }
 

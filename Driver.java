@@ -83,8 +83,8 @@ public class Driver extends LinearOpMode {
             //100% = 6000 rpm
             float indexSpeed = Math.abs(gamepad1.right_trigger);
             float shooterSpeed = Math.abs(gamepad1.left_trigger);
-            index.setPower(-indexSpeed);
-            shooter.setPower(shooterSpeed);
+            index.setPower(indexSpeed);
+            shooter.setPower(-shooterSpeed);
             // telemetry.addData("left trigger", gamepad1.left_trigger);
             // telemetry.addData("right trigger", gamepad1.right_trigger);
             
@@ -95,7 +95,7 @@ public class Driver extends LinearOpMode {
             } else if (gamepad1.left_bumper) {
                 tgtPower = 0;
             }
-            intake.setPower(tgtPower);
+            intake.setPower(-tgtPower);
             
             //directions
             // telemetry.addData("x: ", -gamepad1.left_stick_x);
